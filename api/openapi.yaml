@@ -1,0 +1,240 @@
+openapi: 3.0.1
+info:
+   title: Logging
+   description: The peraMIC logging mudule provides a REST based http interface.
+   contact:
+      name: Support
+      email: support@peraMIC.io
+   version: 3.0.0
+servers:
+-  url: https://{host}/rest/log
+   description: Base URL.
+   variables:
+      host:
+         description: IP of the host
+         default: 10.10.10.10
+security:
+-  basic_auth: []
+tags:
+-  name: Log
+paths:
+   /levels:
+      get:
+         operationId: getLogLevels
+         tags:
+         - Log
+         summary: Returns a list of available log levels
+         responses:
+            '200':
+               description: List of log levels
+               content:
+                  application/json:
+                     schema:
+                        type: array
+                        items:
+                           type: string
+            '500':
+               description: Unexpected error occured
+   /targets:
+      get:
+         operationId: getLogTargets
+         tags:
+         - Log
+         summary: Returns a list of log targets
+         responses:
+            '200':
+               description: List of log targets containing the targets' names and targets' aliases
+               content:
+                  application/json:
+                     schema:
+                        type: array
+                        items:
+                           $ref: '#/components/schemas/LogTarget'
+            '500':
+               description: Unexpected error occured
+   /{target}/level:
+      parameters:
+      -  name: target
+         schema:
+            type: string
+         in: path
+         required: true
+         description: Name of the log target
+      get:
+        tags:
+        - Log
+        summary: Returns the log level of the given log target
+        operationId: getLogLevel
+        responses:
+            '200':
+               description: Log target
+            '500':
+               description: Unexpected error occured
+      put:
+        tags:
+        - Log
+        summary: Sets the log level of the given log target
+        operationId: setLogLevel
+        requestBody:
+         content:
+           application/json:
+             schema:
+               type: string
+        responses:
+            '204':
+               description: Log level set succesfully
+            '400':
+               description: Unknown log level
+            '500':
+               description: Unexpected error occured
+   /{target}/{level}:
+      parameters:
+      -  name: target
+         schema:
+            type: string
+         in: path
+         required: true
+         description: Name of the log target
+      -  name: level
+         schema:
+            type: string
+         in: path
+         required: true
+         description: Log level
+         example: INFO
+      get:
+         operationId: getLogSize
+         tags:
+         - Log
+         summary: Returns the number of log entries of the given target and the given level
+         description: The log level is transformed to a list of effective log levels, i.e. the list of effective log levels
+            contains the given level itself and all log level that are less detailed than the one specified. E.g. if 'info'
+            is the given log level, the list of effective log levels will contain 'info', 'warn' and 'error'. Thus this method
+            does not return the mere number of entries for the given log target and level but rather the number of entries
+            of the given log level and all levels less detailed (or more severe) than the given one.
+         responses:
+            '200':
+               description: Number of log entries returned
+               content:
+                  application/json:
+                     schema:
+                        type: integer
+            '400':
+               description: Unknown log level
+            '500':
+               description: Unexpected error occured
+   /{target}/{level}/{limit}/{offset}:
+      parameters:
+      -  name: target
+         schema:
+            type: string
+         in: path
+         required: true
+         description: Name of the log target
+      -  name: level
+         schema:
+            type: string
+         in: path
+         required: true
+         description: Log level
+         example: INFO
+      -  name: limit
+         schema:
+            type: string
+         in: path
+         required: true
+         description: Number of entries returned or -1 for all log entries
+         example: -1
+      -  name: offset
+         schema:
+            type: string
+         in: path
+         required: true
+         description: Specifies how many entries to skip. Specify 0 to start with the first entry
+         example: 0
+      get:
+         operationId: getLogEntries
+         tags:
+         - Log
+         summary: Returns a list of LogEntry objects for the given target and level
+         description: The log level is transformed to a list of effective log levels, i.e. the list of effective log levels
+            contains the given level itself and all log level that are less detailed than the one specified. E.g. if 'info'
+            is the given log level, the list of effective log levels will contain 'info', 'warn' and 'error'. Thus this method
+            does not only return the entries for the given log target and level but rather the entries of the given log level
+            and all levels less detailed (or more severe) than the given one. <br> By specifying a limit, the number of entries
+            returned can be limited to a certain amount. If all log entries are requested limit must be < 0. By specifying
+            the offset this amount of log entries will be skipped. Thus the proper use of offset and limit allows page based
+            reading of log entries. <br> The log entries are returned in ascending order.
+         responses:
+            '200':
+               description: List of LogEntry objects
+               content:
+                  application/json:
+                     schema:
+                        type: array
+                        items:
+                           type: object
+            '400':
+               description: Unknown log level
+            '500':
+               description: Unexpected error occured
+   /{target}:
+      parameters:
+      -  name: target
+         schema:
+            type: string
+         in: path
+         required: true
+         description: The name of the log target which log entries will be removed
+      delete:
+        operationId: deleteLogEntries
+        tags:
+        - Log
+        summary: Purges the log entries of the given log target
+        responses:
+            '204':
+               description: Log entries deleted succesfully
+   /{target}/{level}/export:
+      parameters:
+      -  name: target
+         schema:
+            type: string
+         in: path
+         required: true
+         description: Name of the log target
+      -  name: level
+         schema:
+            type: string
+         in: path
+         required: true
+         description: Log level
+         example: INFO
+      get:
+         operationId: getLogFile
+         tags:
+         - Log
+         summary: Returns the log entries as a file
+         responses:
+            '200':
+               description: Log file
+               content:
+                  text/plain:
+                     schema:
+                        type: string
+            '400':
+               description: Unknown log level
+components:
+   schemas:
+      LogTarget:
+         type: object
+         properties:
+            name:
+               type: string
+               description: Log target name
+            label:
+               type: string
+               description: Log target alias
+   securitySchemes:
+      basic_auth:
+         type: http
+         scheme: basic
