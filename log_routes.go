@@ -1,7 +1,7 @@
 package logging
 
 import (
-	"github.com/peramic/utils"
+	"github.com/menucha-de/utils"
 )
 
 //LogRoutes routes

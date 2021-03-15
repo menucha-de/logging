@@ -1,11 +1,11 @@
 openapi: 3.0.1
 info:
    title: Logging
-   description: The peraMIC logging mudule provides a REST based http interface.
+   description: The logging mudule provides a REST based http interface.
    contact:
       name: Support
-      email: support@peraMIC.io
-   version: 3.0.0
+      email: info@menucha.de
+   version: 1.0.0
 servers:
 -  url: https://{host}/rest/log
    description: Base URL.

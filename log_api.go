@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/peramic/utils"
+	"github.com/menucha-de/utils"
 
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"

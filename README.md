@@ -8,7 +8,7 @@
     import (
         "errors"
         "net/http"
-        "github.com/peramic/logging"
+        "github.com/menucha-de/logging"
         app "./go"
     )
 
